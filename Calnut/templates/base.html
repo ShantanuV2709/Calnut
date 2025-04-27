@@ -1,0 +1,171 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+      }
+    </style>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <title>{% block title %}{% endblock title %} | CalNut</title>
+
+    <style>
+      .navbar {
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+      }
+    
+      .navbar .nav-link {
+        color: #2e7d32 !important;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+    
+      .navbar .nav-link:hover {
+        color: #1b5e20 !important;
+      }
+    
+      .navbar-brand {
+        font-size: 26px;
+        font-weight: 700;
+        color: #2e7d32 !important;
+      }
+    
+      .dropdown-menu {
+        background-color: #f1f8e9;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+    
+      .dropdown-item {
+        color: #2e7d32;
+      }
+    
+      .dropdown-item:hover {
+        background-color: #dcedc8;
+        color: #1b5e20;
+      }
+    
+      .btn-success {
+        background-color: #4CAF50;
+        border: none;
+      }
+    
+      .btn-success:hover {
+        background-color: #388e3c;
+      }
+
+      .developer-name {
+        font-weight: bold;
+        color: #00ff99;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .developer-name::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #ffcc00;
+        transform: scaleX(0);
+        transform-origin: bottom right;
+        transition: transform 0.3s ease-out;
+      }
+
+      .developer-name:hover {
+        color: #ffcc00;
+      }
+
+      .developer-name:hover::after {
+        transform: scaleX(1);
+        transform-origin: bottom left;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+      <a class="navbar-brand fw-bold text-success" href="{% url 'home' %}">CalNut</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Nutrition & Tracking</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'calories' %}">Track Calories</a></li>
+              <li><a class="dropdown-item" href="{% url 'graphs' %}">Progress Graphs</a></li>
+              <li><a class="dropdown-item" href="{% url 'meals' %}">Meal Suggestions</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Food & Recipes</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'food' %}">Food Database</a></li>
+              <li><a class="dropdown-item" href="{% url 'recipes' %}">Recipes</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'blogs' %}">Blogs</a>
+          </li>
+          
+          {% if user.is_authenticated %}
+            <!-- Link to Profile for Logged-in Users -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'profile' %}">My Profile</a>
+            </li>
+            <!-- Logout Link for Logged-in Users -->
+            <li class="nav-item">
+              <a class="nav-link btn btn-success text-white px-3 ms-2" href="{% url 'logout' %}">Logout</a>
+            </li>
+          {% else %}
+            <!-- Link to Login for Unauthenticated Users -->
+            <li class="nav-item">
+              <a class="nav-link btn btn-success text-white px-3 ms-2" href="{% url 'login' %}">Login</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+    
+    {% block navbar %}{% endblock navbar %}
+
+    <div class="container mt-4">
+      {% block body %}
+      <!-- Main page content goes here -->
+      {% endblock body %}
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+      <div class="container text-center">
+        <p class="mb-1">Made with 💚 for fitness lovers everywhere.</p>
+        <p class="mb-0">
+          Crafted by 
+          <span class="developer-name">Shantanu Verma</span> & 
+          <span class="developer-name">Suryaanshu Jindani</span>
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock scripts %}
+  </body>
+</html>
