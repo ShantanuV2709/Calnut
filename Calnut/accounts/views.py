@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from .forms import UserProfileForm
 
@@ -59,10 +60,10 @@ def login_view(request):
 
             # Check if the user has a profile
             try:
-                user_profile = UserProfile.objects.get(user=user)
+                UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
-                # If the user does not have a profile, redirect to profile creation page
-                return redirect('profile_create')
+                # If the user does not have a profile, redirect to profile page to create one
+                return redirect('profile')
 
             # Successful login
             messages.success(request, f"Welcome back, {user.username}!")
@@ -78,27 +79,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def profile_view(request):
-    try:
-        profile = UserProfile.objects.get(user=request.user)  # Fetch user's profile
-    except UserProfile.DoesNotExist:
-        # If the profile doesn't exist, redirect to profile creation page
-        return redirect('profile_create')
-
-    # Handling the profile form submission (to update the profile)
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated successfully!")
-            return redirect('profile')  # Redirect to the same page after saving changes
-        else:
-            messages.error(request, "There was an error updating your profile.")
-    else:
-        form = UserProfileForm(instance=profile)
-
-    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile})
-
+@login_required
 def profile_view(request):
     try:
         # Try to fetch the existing user profile
@@ -115,7 +96,9 @@ def profile_view(request):
             profile = form.save(commit=False)
             profile.user = request.user
             profile.save()
+            messages.success(request, "Your profile has been updated successfully!")
             return redirect('profile')  # Redirect to the same page after saving changes
+        messages.error(request, "There was an error updating your profile.")
     else:
         # If it's a GET request, load the profile form with the user's profile (if exists)
         form = UserProfileForm(instance=profile)
