@@ -247,27 +247,6 @@ Calnut/
    - **CSV**: Raw data export
    - **PDF**: Formatted report with styling
 
-## 🔐 Security Notes
-
-> [!IMPORTANT]
-> This project uses environment variables to manage sensitive configuration. The `.env` file contains your secret key and should **never** be committed to version control.
-
-> [!WARNING]
-> Set `DEBUG = False` in your `.env` file before deploying to production.
-
-### Production Deployment Checklist:
-- [x] ✅ `SECRET_KEY` is now in `.env` file (not committed to repo)
-- [ ] Generate a new secure `SECRET_KEY` for production
-- [ ] Set `DEBUG=False` in `.env`
-- [ ] Configure `ALLOWED_HOSTS` with your domain in settings.py
-- [ ] Use strong MongoDB authentication credentials
-- [ ] Set up HTTPS/SSL certificates
-- [ ] Configure static file serving with WhiteNoise or CDN
-- [ ] Implement rate limiting for API calls
-- [ ] Set up proper logging and monitoring
-- [ ] Enable CORS only for trusted domains
-- [ ] Implement backup strategy for MongoDB
-
 ## 🧪 Exercise Calorie Calculations
 
 The application uses approximate calorie burn rates per minute:
