@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}My Profile | Calnut{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+  <!-- Header -->
+  <div class="glass-card p-8 rounded-3xl relative overflow-hidden text-center">
+    <div class="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 pointer-events-none"></div>
+    <div class="relative z-10">
+      <div
+        class="w-24 h-24 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-4xl text-white font-bold mx-auto mb-4 shadow-lg shadow-green-500/30">
+        {{ user.username|make_list|first|upper }}
+      </div>
+      <h1 class="text-3xl font-extrabold text-gray-900">Hello, {{ user.username }}!</h1>
+      <p class="text-gray-500 mt-2">Manage your account and nutrition settings</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Profile Form -->
+    <div class="md:col-span-2">
+      <div class="glass-card p-8 rounded-3xl shadow-lg">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-user-cog text-green-500"></i> Account Details
+        </h3>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+          {% csrf_token %}
+
+          {% for field in form %}
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">{{ field.label }}</label>
+            {% if field.field.widget.input_type == "file" %}
+            <div class="flex items-center justify-center w-full">
+              <label
+                class="flex flex-col items-center justify-center w-full h-32 border-2 border-green-300 border-dashed rounded-xl cursor-pointer bg-green-50 hover:bg-green-100 transition-colors">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                  <i class="fas fa-cloud-upload-alt text-2xl text-green-500 mb-2"></i>
+                  <p class="text-sm text-gray-500">Click to upload {{ field.label|lower }}</p>
+                </div>
+                <input type="file" name="{{ field.name }}" class="hidden" />
+              </label>
+            </div>
+            {% else %}
+            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}"
+              value="{{ field.value|default:'' }}"
+              class="block w-full px-4 py-3 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none font-medium text-gray-900">
+            {% endif %}
+            {% if field.help_text %}
+            <p class="mt-1 text-xs text-gray-400">{{ field.help_text }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+
+          <button type="submit"
+            class="w-full py-4 rounded-xl bg-gray-900 text-white font-bold text-lg hover:bg-gray-800 hover:-translate-y-1 transition-all shadow-lg">
+            Update Profile
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick Stats / Actions -->
+    <div class="md:col-span-1 space-y-6">
+      <div class="glass-card p-6 rounded-3xl text-center">
+        <p class="text-sm text-gray-400 font-bold uppercase tracking-wider mb-2">Member Since</p>
+        <p class="text-2xl font-bold text-gray-900">{{ user.date_joined|date:"F Y" }}</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-3xl">
+        <h4 class="font-bold text-gray-900 mb-4">Quick Links</h4>
+        <div class="space-y-3">
+          <a href="{% url 'calories' %}"
+            class="block p-3 rounded-xl bg-orange-50 text-orange-600 font-medium hover:bg-orange-100 transition-colors">
+            <i class="fas fa-calculator mr-2"></i> Recalculate BMR
+          </a>
+          <a href="{% url 'meals' %}"
+            class="block p-3 rounded-xl bg-green-50 text-green-600 font-medium hover:bg-green-100 transition-colors">
+            <i class="fas fa-utensils mr-2"></i> Browse Meals
+          </a>
+        </div>
+      </div>
+
+      <a href="{% url 'logout' %}"
+        class="block w-full py-4 rounded-xl bg-red-50 text-red-500 font-bold text-center hover:bg-red-100 transition-colors">
+        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Scientific Stats Section -->
+  {% if profile.calculated_bmr %}
+  <div class="glass-card p-8 rounded-3xl mb-8">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+      <i class="fas fa-microscope text-purple-500"></i> Scientific Stats
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div
+        class="bg-purple-50 p-6 rounded-2xl border border-purple-100 text-center relative overflow-hidden group hover:shadow-md transition-all">
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <i class="fas fa-fire text-6xl text-purple-600"></i>
+        </div>
+        <p class="text-sm font-bold text-purple-600 uppercase tracking-wider mb-2">BMR (Basal Metabolic Rate)</p>
+        <p class="text-4xl font-extrabold text-gray-900">{{ profile.calculated_bmr }} <span
+            class="text-lg text-gray-400 font-medium">kcal</span></p>
+        <p class="text-xs text-gray-500 mt-2 font-medium">Calories burned at complete rest</p>
+      </div>
+      <div
+        class="bg-green-50 p-6 rounded-2xl border border-green-100 text-center relative overflow-hidden group hover:shadow-md transition-all">
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <i class="fas fa-walking text-6xl text-green-600"></i>
+        </div>
+        <p class="text-sm font-bold text-green-600 uppercase tracking-wider mb-2">TDEE (Total Expenditure)</p>
+        <p class="text-4xl font-extrabold text-gray-900">{{ profile.calculated_tdee }} <span
+            class="text-lg text-gray-400 font-medium">kcal</span></p>
+        <p class="text-xs text-gray-500 mt-2 font-medium">Daily calories to maintain weight</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Custom Plan Section -->
+  {% if custom_plan %}
+  <div class="glass-card p-8 rounded-3xl">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+      <i class="fas fa-clipboard-list text-green-500"></i> Your Custom Plan
+    </h2>
+
+    <div
+      class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white/50 p-6 rounded-2xl border border-white/60">
+      <div>
+        <p class="text-sm font-bold text-gray-500 uppercase">Daily Target</p>
+        <p class="text-3xl font-extrabold text-green-600">{{ profile.daily_calorie_goal }} <span
+            class="text-lg text-gray-400">kcal</span></p>
+      </div>
+      <div class="text-right mt-4 md:mt-0 flex gap-6">
+        <div>
+          <p class="text-sm font-bold text-gray-500 uppercase">Total Calories</p>
+          <p class="text-3xl font-extrabold text-blue-600">{{ plan_calories }} <span
+              class="text-lg text-gray-400">kcal</span></p>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-gray-500 uppercase">Total Protein</p>
+          <p class="text-3xl font-extrabold text-blue-500">{{ plan_protein }} <span
+              class="text-lg text-gray-400">g</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {% for meal in custom_plan %}
+      <div
+        class="bg-white/60 p-5 rounded-2xl border border-white/60 hover:shadow-lg transition-all transform hover:-translate-y-1 group">
+        <div class="mb-3 flex justify-between items-start">
+          <span class="px-3 py-1 bg-gray-900 text-white rounded-lg text-xs font-bold uppercase">{{ meal.type }}</span>
+          <span class="text-xs font-bold text-gray-400">{{ meal.prep_time|default:"10" }}m</span>
+        </div>
+        <h4 class="font-bold text-gray-900 mb-2 truncate group-hover:text-green-600 transition-colors">{{ meal.name }}
+        </h4>
+        <div class="flex items-center gap-4 text-sm font-bold">
+          <span class="text-orange-500 flex items-center gap-1"><i class="fas fa-fire-alt"></i> {{ meal.calories }}
+            kcal</span>
+          <span class="text-blue-500 flex items-center gap-1"><i class="fas fa-drumstick-bite"></i> {{ meal.protein }}g
+            Protein</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

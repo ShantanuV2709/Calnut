@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calnut - Premium Diet & Health</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      min-height: 100vh;
+    }
+
+    /* Glassmorphism Utilities */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .glass-dark {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+
+    /* Animated Background Gradient */
+    .animated-bg {
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background-color: #10B981;
+      transition: width 0.3s;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col text-gray-800 antialiased overflow-x-hidden">
+
+  <!-- Navbar -->
+  <nav class="glass fixed w-full z-50 top-0 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-20 items-center">
+        <!-- Logo -->
+        <a href="{% url 'home' %}" class="flex-shrink-0 flex items-center gap-2">
+          <div
+            class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-green-200">
+            C
+          </div>
+          <span
+            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500">Calnut</span>
+        </a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex space-x-8">
+          <a href="{% url 'home' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Home</a>
+          <a href="{% url 'calories' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Calculator</a>
+          <a href="{% url 'meals' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Meals</a>
+          <a href="{% url 'diary' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Diary</a>
+          <a href="{% url 'analytics' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Analytics</a>
+          <a href="{% url 'food' %}"
+            class="nav-link text-gray-600 hover:text-green-600 font-medium transition-colors">Food Search</a>
+        </div>
+
+        <!-- User Menu -->
+        <div class="hidden md:flex items-center space-x-4">
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}"
+            class="glass px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:bg-white transition-all shadow-sm">
+            <i class="fas fa-user-circle mr-2 text-green-500"></i> Profile
+          </a>
+          <a href="{% url 'logout' %}"
+            class="px-4 py-2 rounded-full bg-red-50 text-red-500 text-sm font-medium hover:bg-red-100 transition-colors">
+            Logout
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}" class="text-gray-600 hover:text-green-600 font-medium">Login</a>
+          <a href="{% url 'register' %}"
+            class="px-6 py-2.5 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white font-medium shadow-lg shadow-green-200 hover:shadow-green-300 transform hover:-translate-y-0.5 transition-all">
+            Get Started
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-grow pt-20">
+    <!-- Ephemeral Messages -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      {% for message in messages %}
+      <div
+        class="glass p-4 rounded-xl border-l-4 mb-4 flex items-center {% if message.tags == 'success' %}border-green-500 text-green-800 bg-green-50/50{% elif message.tags == 'error' %}border-red-500 text-red-800 bg-red-50/50{% else %}border-blue-500 text-blue-800 bg-blue-50/50{% endif %}">
+        <i
+          class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3 text-lg"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Premium Footer -->
+  <footer class="bg-gray-900 text-white pt-16 pb-8 mt-20 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div class="col-span-1 md:col-span-2">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-green-500/30">
+              C</div>
+            <span class="text-2xl font-bold">Calnut</span>
+          </div>
+          <p class="text-gray-400 max-w-sm">Empowering your health journey with precision nutrition tracking and smart
+            diet planning. Built for the modern lifestyle.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4 text-green-400">Features</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="{% url 'calories' %}" class="hover:text-white transition-colors">BMR Calculator</a></li>
+            <li><a href="{% url 'food' %}" class="hover:text-white transition-colors">Food Database</a></li>
+            <li><a href="{% url 'meals' %}" class="hover:text-white transition-colors">Meal Plans</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4 text-green-400">Company</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Privacy</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+        <p>&copy; 2026 Calnut Inc. All rights reserved.</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+          <a href="#" class="hover:text-white transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+          <a href="#" class="hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
