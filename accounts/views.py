@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from .forms import UserProfileForm
 
@@ -60,10 +61,10 @@ def login_view(request):
 
             # Check if the user has a profile
             try:
-                user_profile = UserProfile.objects.get(user=user)
+                UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
-                # If the user does not have a profile, redirect to profile creation page
-                return redirect('profile_create')
+                # If the user does not have a profile, redirect to profile page to create one
+                return redirect('profile')
 
             # Successful login
             messages.success(request, f"Welcome back, {user.username}!")
@@ -81,78 +82,44 @@ def logout_view(request):
 
 def profile_view(request):
     try:
-        profile = UserProfile.objects.get(user=request.user)
+        profile = UserProfile.objects.get(user=request.user)  # Fetch user's profile
     except UserProfile.DoesNotExist:
-        profile = UserProfile.objects.create(user=request.user)
+        # If the profile doesn't exist, redirect to profile creation page
+        return redirect('profile_create')
 
+    # Handling the profile form submission (to update the profile)
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            profile = form.save(commit=False)
-            
-            # --- Auto-Calculate BMR & TDEE ---
-            if profile.current_weight and profile.height and profile.date_of_birth and profile.gender:
-                try:
-                    import datetime
-                    today = datetime.date.today()
-                    age = today.year - profile.date_of_birth.year - ((today.month, today.day) < (profile.date_of_birth.month, profile.date_of_birth.day))
-                    
-                    # Mifflin-St Jeor Equation
-                    bmr = (10 * profile.current_weight) + (6.25 * profile.height) - (5 * age)
-                    
-                    if profile.gender == 'M':
-                        bmr += 5
-                    else:
-                        bmr -= 161
-                    
-                    # TDEE
-                    activity_multiplier = float(profile.activity_level)
-                    tdee = bmr * activity_multiplier
-                    
-                    profile.calculated_bmr = int(bmr)
-                    profile.calculated_tdee = int(tdee)
-                    
-                    # Auto-set daily goal if not set by user (or strictly for guidance)
-                    # For now, let's just save the calculated values so we can show them
-                    # Or we can auto-update the goal if the user didn't manually type one?
-                    # Let's overwrite safely if it matches the default 2000
-                    if profile.daily_calorie_goal == 2000:
-                         profile.daily_calorie_goal = int(tdee)
-
-                except Exception as e:
-                    print(f"Error calculating BMR: {e}")
-            
-            profile.save()
-            messages.success(request, "Your profile and custom plan have been updated!")
-            return redirect('profile')
+            form.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('profile')  # Redirect to the same page after saving changes
         else:
-            print(form.errors)
             messages.error(request, "There was an error updating your profile.")
     else:
         form = UserProfileForm(instance=profile)
 
-    # --- Generate Custom Plan ---
-    # Simple logic: Try to find one meal of each type
-    from home.models import Meal
-    
-    # Defaults
-    breakfast = Meal.objects.filter(type__icontains='Breakfast').first()
-    lunch = Meal.objects.filter(type__icontains='Lunch').first()
-    dinner = Meal.objects.filter(type__icontains='Dinner').first()
-    snack = Meal.objects.filter(type__icontains='Snack').first()
-    
-    custom_plan = [m for m in [breakfast, lunch, dinner, snack] if m]
-    
-    # Calculate totals
-    total_calories = sum(m.calories for m in custom_plan)
-    total_protein = sum(m.protein for m in custom_plan)
+    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile})
 
-    context = {
-        'form': form, 
-        'profile': profile,
-        'custom_plan': custom_plan,
-        'plan_calories': total_calories,
-        'plan_protein': total_protein
-    }
+def profile_view(request):
+    try:
+        # Try to fetch the existing user profile
+        profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        # If no profile exists, create a new one
+        profile = None
 
-    return render(request, 'accounts/profile.html', context)
+    # Handle the form submission (to create or update the profile)
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            # Save the profile, ensuring it's associated with the current user
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            return redirect('profile')  # Redirect to the same page after saving changes
+    else:
+        # If it's a GET request, load the profile form with the user's profile (if exists)
+        form = UserProfileForm(instance=profile)
+
+    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile})
