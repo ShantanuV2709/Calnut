@@ -80,26 +80,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def profile_view(request):
-    try:
-        profile = UserProfile.objects.get(user=request.user)  # Fetch user's profile
-    except UserProfile.DoesNotExist:
-        # If the profile doesn't exist, redirect to profile creation page
-        return redirect('profile_create')
-
-    # Handling the profile form submission (to update the profile)
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated successfully!")
-            return redirect('profile')  # Redirect to the same page after saving changes
-        else:
-            messages.error(request, "There was an error updating your profile.")
-    else:
-        form = UserProfileForm(instance=profile)
-
-    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile})
 
 def profile_view(request):
     try:
